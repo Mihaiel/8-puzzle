@@ -1,4 +1,5 @@
 import random
+import time
 
 # Start state of the board (randomly shuffle 9 integers 0-8, 0 being blank)
 start_state = list(range(9))
@@ -69,11 +70,6 @@ def manhattan(board) -> int:
         distance += abs(r - gr) + abs(c - gc)
     return distance
 
-# Prints both the heuristics (hamming and manhattan) as a string
-def calculate_heuristic(board) -> int:
-    heuristic_sum = hamming(board) + manhattan(board)
-    return heuristic_sum
-
 def neighbors(board):
     new_boards = []
     i0 = board.index(0)  # where is the blank?
@@ -111,15 +107,26 @@ def reconstruct_path(came_from, current):
     return path
 
 
-def a_star(start):
+def a_star(start, heuristic_func):
     # f(n) = g(n) + h(n)
-    # |      |      ->  h(n) = our heuristic (manhattan + hamming)
+    # |      |      ->  h(n) = our heuristic (manhattan or hamming)
     # |       ->        g(n) = our moves so far
     #  ->               f(n) = total cost (A* Algorithm)
 
     # Convert to tuple so we can use it in dictionaries
     start = tuple(start)
     goal = tuple(goal_state)
+
+    # Decide which heuristic to use
+    if heuristic_func == "manhattan":
+        print("Using manhattan as heuristic.")
+        heuristic = lambda b: manhattan(list(b))
+    elif heuristic_func == "hamming":
+        print("Using hamming as heuristic.")
+        heuristic = lambda b: hamming(list(b))
+    else:
+        print("Wrong heuristic name! Use either 'manhattan' or 'hamming'.")
+        return None
 
     # Keep track of where we came from (used to rebuild path)
     came_from = {}
@@ -128,20 +135,22 @@ def a_star(start):
     g_score = {start: 0}
 
     # f[n] = g + h, saved as a tuple -> key value pair
-    f_score = {start: calculate_heuristic(start)}
+    f_score = {start: heuristic(start)}
 
-    # Boards we still need to explore
+    # Boards we still need to explore and expanded nodes (for memory measure)
     to_explore = [start]
+    expanded_nodes = 0
 
     while to_explore:
             # Look at each board b in to_explore, calculate f_score of each, pick the lowest one
             # (min function)
             current = min(to_explore, key=lambda b: f_score[b])
+            expanded_nodes += 1
 
             # If we reached the goal → stop
             if current == goal:
                 print("✅ Goal reached!")
-                return reconstruct_path(came_from, current)
+                return reconstruct_path(came_from, current), expanded_nodes
 
             # Remove from open list
             to_explore.remove(current)
@@ -155,7 +164,7 @@ def a_star(start):
                 if neighbor not in g_score or tentative_g < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g
-                    f_score[neighbor] = tentative_g + calculate_heuristic(neighbor)
+                    f_score[neighbor] = tentative_g + heuristic(neighbor)
                     if neighbor not in to_explore:
                         to_explore.append(neighbor)
 
@@ -164,27 +173,46 @@ def a_star(start):
 
 
 ### MAIN CODE ###
-# Keep generating until we get a solvable start
-while not is_solvable(start_state):
-    print("Current board not solvable, generating another one...")
-    random.shuffle(start_state)
+# Wrap (Run this code only if this file is being executed directly, not when it’s imported)
+if __name__ == "__main__":
+    # Keep generating until we get a solvable start
+    while not is_solvable(start_state):
+        print("Current board not solvable, generating another one...")
+        random.shuffle(start_state)
 
-# Starting state of the puzzle
-print("\nSolvable board generated!")
-prettify(start_state)
-calculate_heuristic(start_state)
+    # Starting state of the puzzle
+    print("\nSolvable board generated!")
+    prettify(start_state)
 
-# Run the A* search
-print("\nStarting A* Search...\n")
-solution_path = a_star(start_state)
+    # Choose heuristic
+    while True:
+        print("\nChoose a heuristic:")
+        print("(1) Hamming")
+        print("(2) Manhattan")
+        choice = input("> ").strip()
+        if choice == "1":
+            heuristic_name = "hamming"
+            break
+        elif choice == "2":
+            heuristic_name = "manhattan"
+            break
+        else:
+            print("Wrong input, try again (1 or 2).")
 
-# Show the solution if found
-if solution_path:
-    print("\nSolution found!")
-    print("Number of moves:", len(solution_path) - 1)
-    for i, board in enumerate(solution_path):
-        print("\nStep " + str(i) + ": ")
-        prettify(list(board))
-else:
-    print("No solution could be found.")
+    print("\nStarting A* Search...\n")
+    # Start the A* Algorithm and measure the time
+    start_time = time.time()
+    solution_path, expanded = a_star(start_state, heuristic_name)
+    elapsed_time = time.time() - start_time
 
+    # --- show result ---
+    if solution_path:
+        print("\nSolution found!")
+        print("Number of moves:", len(solution_path) - 1)
+        print("Time taken: " + str(elapsed_time) + "s")
+        print("Memory used: " + str(expanded))
+        for i, board in enumerate(solution_path):
+            print(f"\nStep {i}:")
+            prettify(list(board))
+    else:
+        print("No solution could be found.")
