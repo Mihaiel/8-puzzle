@@ -2,7 +2,7 @@ import time
 import random
 from Puzzle import a_star, is_solvable
 
-def compare_heuristics(num_tests=5):
+def compare_heuristics(num_tests=100):
     """
     Runs multiple random solvable 8-puzzle tests to compare Hamming and Manhattan heuristics.
 
