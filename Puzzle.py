@@ -18,14 +18,6 @@ goal_positions = {
   8: (2,2)
 }
 
-# We define our possible moves
-moves = {
-    'U': -3,  # Move up
-    'D': 3,   # Move down
-    'L': -1,  # Move left
-    'R': 1    # Move rightxq
-}
-
 # Instead of writing everything in a line, we want to prettify it
 def prettify(board):
     board_printed = ""
