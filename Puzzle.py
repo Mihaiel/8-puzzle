@@ -65,12 +65,12 @@ def manhattan(board) -> int:
 def neighbors(board):
     new_boards = []
     i0 = board.index(0)  # where is the blank?
-    row, col = divmod(i0, 3)
+    row, col = divmod(i0, 3) # returns the exact row and column where the blank is (if it's 5 return 5/3 -> 1 rest is 2 so row=1 col=2)
 
     # check each direction if we can move there
     if row > 0:  # move up
-        new = board.copy()
-        new[i0], new[i0 - 3] = new[i0 - 3], new[i0]
+        new = board.copy() # copy the board in a temporary variable so we don't modify the original one
+        new[i0], new[i0 - 3] = new[i0 - 3], new[i0] # execute the move
         new_boards.append(new)
 
     if row < 2:  # move down
@@ -109,7 +109,7 @@ def a_star(start, heuristic_func):
     start = tuple(start)
     goal = tuple(goal_state)
 
-    # Decide which heuristic to use
+    # Decide which heuristic to use, we use lambda here, b represents the board (we do this because we can use lists)
     if heuristic_func == "manhattan":
         print("Using manhattan as heuristic.")
         heuristic = lambda b: manhattan(list(b))
@@ -144,13 +144,13 @@ def a_star(start, heuristic_func):
                 print("✅ Goal reached!")
                 return reconstruct_path(came_from, current), expanded_nodes
 
-            # Remove from open list
+            # Once explored, remove from open list 
             to_explore.remove(current)
 
             # Explore all neighbors (possible moves of the blank)
             for neighbor in neighbors(list(current)):
                 neighbor = tuple(neighbor)
-                tentative_g = g_score[current] + 1  # one more move
+                tentative_g = g_score[current] + 1  # each move costs 1, so this neighbor is one move farther away.
 
                 # If we haven't seen this board before or found a better path to it
                 if neighbor not in g_score or tentative_g < g_score[neighbor]:
