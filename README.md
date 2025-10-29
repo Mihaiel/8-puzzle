@@ -1,0 +1,1 @@
+This is a exercise project that we had to do for our class "Introduction to AI and Data Science". We had to implement an A* search altorithm to solve a random generated 3x3 Puzzle and compare different heuristics.
